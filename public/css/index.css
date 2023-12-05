@@ -1,82 +1,23 @@
-*,
-html {
-  margin: 0;
-  padding: 0;
-  border: 0;
+.mainBlock {
+  position: relative;
+  width: 40%;
+  height: auto;
+  padding: 5px;
+  margin: 2% auto;
 }
 
-html {
-  width: 100%;
-  height: 100%;
-}
-
-h2 {
-  text-align: center;
-}
-
-.inner {
-  width: 50px;
-  height: 50px;
-  font-size: 20px;
-  line-height: 50px;
-  text-align: center;
-  text-transform: uppercase;
+#session {
   border: 1px solid #333;
-  margin: 5px;
+}
+
+.session {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+  width: auto;
+  border: 1px solid #333;
+}
+
+.connectBtn {
   cursor: pointer;
-  box-shadow: 3px 4px 1px 2px rgba(1, 1, 1, 0.1);
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
-}
-
-.inner:hover {
-  background-color: rgba(1, 1, 1, 0.2);
-}
-
-#win_block {
-  display: none;
-  text-align: center;
-  padding-top: 20px;
-  font-size: 20px;
-}
-
-#win_block .again {
-  font-weight: bold;
-  cursor: pointer;
-  color: #369;
-  border-bottom: 1px solid #369;
-}
-
-#win_block .again:hover {
-  border-color: transparent;
-}
-
-#game {
-  position: relative;
-}
-
-#game .table {
-  /*border: 1px solid red;*/
-  display: table;
-  margin: 0 auto;
-  position: relative;
-}
-
-#game .table .winning {
-  display: none;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 200, 0, 0.5);
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-#game table tr div {
-  margin: 0;
-}
-
-#game table tr td div {
-  margin: 0;
 }/*# sourceMappingURL=index.css.map */
