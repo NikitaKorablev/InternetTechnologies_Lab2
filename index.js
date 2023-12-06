@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
 
-const { Cross, Zero, Cell, Field, Session, Game } = require('./controllers/game.js');
+const { Game } = require('./controllers/game.js');
 
 
 // const http = require('node:http');
@@ -16,7 +16,7 @@ const port = 3001;
 
 const app = express();
 
-// app.set('view engine', 'html');
+app.set('view engine', 'html');
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,15 +34,25 @@ app.get("/", (req, res) => {
 });
 
 app.get("/game:id", (req, res) => {
-  // res.render(__dirname + "/public/views/game");
-  res.sendFile(path.join(__dirname + "/views/game.html"));
+  try {
+    const session_id = req.params.id.split(':')[1];
+    const player_id = req.sessionID;
+    game.addPlayer(session_id, player_id);
+
+    // res.render(__dirname + "/public/views/game");
+    res.sendFile(path.join(__dirname + "/views/game.html"));
+  } catch (err) {
+    console.error(err);
+    res.writeHead(500);
+    res.end();
+  }
 });
 
 //-------Another-requests------------
 app.post("/createSession", (req, res) => {
   const sessionId = game.createNewSession(req.sessionID);
 
-  data = {
+  const data = {
       "id": sessionId
   };
 
@@ -51,8 +61,22 @@ app.post("/createSession", (req, res) => {
   return res.end(JSON.stringify(data));
 });
 
+// app.post("/set2ndPlayer", (req, res) => {
+//   const player = req.sessionID;
+//   const session_id = req.body.session_id;
+
+//   try {
+//     game.addSecondPlayer(session_id, player);
+//   } catch (error) {
+//     console.error("Error: ", error);
+//   }
+  
+//   res.writeHead(200);
+//   return res.end();
+// })
+
 app.get("/getSessionsList", (req, res) => {
-  data = {
+  const data = {
     "sessions": game.sessions
   };
 
@@ -61,13 +85,40 @@ app.get("/getSessionsList", (req, res) => {
   return res.end(JSON.stringify(data));
 });
 
-//-------------Test------------------
+//-------------SSE-------------------
+
+app.get("/getField", (req, res) => {
+  console.log("\n\n");
+
+  const player_id = req.sessionID;
+  const session_id = game.getSessionId(player_id);
+  console.log("id: ", player_id);
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Cache-Control', 'no-cache');
+
+  let timer = setInterval(() => {
+    res.status(200);
+    data = {
+      "field": game.getSession(session_id).getField()
+    };
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    // console.log("data", data);
+  }, 1000);
+
+  // game.response = res;
+  req.on('close', () => {
+    clearInterval(timer);
+    res.end();
+    return;
+  })
+});
 
 app.get('/listUpdate', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('Cache-Control', 'no-cache');
-  // res.set('Access-Control-Allow-Origin', '*');
   console.log(`${req.sessionID}: Connection opened`);
 
   let timer = setInterval(() => {
@@ -87,6 +138,10 @@ app.get('/listUpdate', (req, res) => {
     return;
   })
 });
+
+//-----------------------------------
+
+
 
 //-----------------------------------
 

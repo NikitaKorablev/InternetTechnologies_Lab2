@@ -43,3 +43,24 @@ div_win_block.appendChild(span_again);
 
 gameField.appendChild(div_table);
 gameField.appendChild(div_win_block);
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+// let currentField = [];
+const eventSource = new EventSource('/getField');
+eventSource.onmessage = (event) => {
+    const response = JSON.parse(event.data);
+    try {
+        console.log(response);
+        // console.log(currentSessions.toString() != response.sessions.toString());
+        // if (currentSessions.toString() != response.sessions.toString()) {
+        //     currentSessions = response.sessions;
+        //     refreshSessions(currentSessions);
+        // }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+};

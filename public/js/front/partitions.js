@@ -1,3 +1,28 @@
+// async function set2ndPlayer(session_id) {
+//     const url = "/set2ndPlayer";
+//     const data = { "session_id": session_id };
+
+//     try {
+//         const response = await fetch(url, { 
+//             method: 'POST',
+//             headers: {
+//                 "Content-Type": "application/json",
+//             },
+//             body: JSON.stringify(data),
+//         })
+//         .then(resp => {
+//             if(!resp.ok) // если возникла ошибка, то срабатывает исключение и кадет в catch
+//                 throw new Error("HTTP-Error: " + resp.status);
+//             return resp;
+//         });
+
+        
+//         return response.json();
+//     } catch(error) {
+//         console.error("Error", error);
+//     }
+// }
+
 function newSession(name, id) {
     const session = document.createElement("div");
     session.className = "session";
@@ -19,19 +44,22 @@ function newSession(name, id) {
 function refreshSessions(sessionsList) {
     document.getElementById("sessions").innerHTML = "";
     sessionsList.forEach(session => {
-        const name = session.sessionOwner;
+        console.log(session);
+        const name = session.owner;
         const id = session.id;
         
         newSession(name, id);
 
+        //------Event-for-Connect-button----------
         try {
             const btnConnect = document.getElementById(id);
-            btnConnect.addEventListener('click', (e) => {
+            btnConnect.addEventListener('click', async (e) => {
                 window.open("/game:" + e.target.id, "_self");
             });
         } catch (err) {
             console.error("Error:", err);
         }
+        //----------------------------------------
     });
 }
 
