@@ -9,7 +9,7 @@
 
 }
 
-#session {
+#sessions {
 	border: 1px solid #333;
 }
 
@@ -17,11 +17,11 @@
     display: flex;
     justify-content: space-between;
 
-    padding: 5px;
+    padding: 10px;
     // margin-bottom: 5px;
     width: auto;
 
-	border: 1px solid #333;
+	// border: 1px solid #333;
 }
 
 .connectBtn {

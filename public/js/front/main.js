@@ -16,7 +16,7 @@ const eventSource = new EventSource('/listUpdate');
 eventSource.onmessage = (event) => {
     const response = JSON.parse(event.data);
     try {
-        console.log(currentSessions.toString() != response.sessions.toString());
+        // console.log(currentSessions.toString() != response.sessions.toString());
         if (currentSessions.toString() != response.sessions.toString()) {
             currentSessions = response.sessions;
             refreshSessions(currentSessions);

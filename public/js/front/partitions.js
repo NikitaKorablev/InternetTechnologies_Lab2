@@ -1,28 +1,3 @@
-// async function set2ndPlayer(session_id) {
-//     const url = "/set2ndPlayer";
-//     const data = { "session_id": session_id };
-
-//     try {
-//         const response = await fetch(url, { 
-//             method: 'POST',
-//             headers: {
-//                 "Content-Type": "application/json",
-//             },
-//             body: JSON.stringify(data),
-//         })
-//         .then(resp => {
-//             if(!resp.ok) // если возникла ошибка, то срабатывает исключение и кадет в catch
-//                 throw new Error("HTTP-Error: " + resp.status);
-//             return resp;
-//         });
-
-        
-//         return response.json();
-//     } catch(error) {
-//         console.error("Error", error);
-//     }
-// }
-
 function newSession(name, id) {
     const session = document.createElement("div");
     session.className = "session";
@@ -44,8 +19,8 @@ function newSession(name, id) {
 function refreshSessions(sessionsList) {
     document.getElementById("sessions").innerHTML = "";
     sessionsList.forEach(session => {
-        console.log(session);
-        const name = session.owner;
+        // console.log(session);
+        const name = session.players[0].player;
         const id = session.id;
         
         newSession(name, id);

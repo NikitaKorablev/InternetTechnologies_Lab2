@@ -1,66 +1,38 @@
-const gameField = document.getElementById("game");
-const div_table = document.createElement("div")
-div_table.className = "table";
+import { drawField } from '../front/draw.js';
 
-const table = document.createElement("table");
+window.addEventListener("load", async () => {
+    let currentChanges = await drawField();
+    
+    // let currentChanges = [];
+    const eventSource = new EventSource('/getChanges');
+    eventSource.onmessage = (event) => {
+        const response = JSON.parse(event.data);
+        try {
+            // console.log(response.changes);
+            if (response.changes && response.changes.length != currentChanges.length) {
+                if (response.changes.length - currentChanges.length > 1) 
+                    throw new Error("More than one changes.");
+    
+                const newChanges = response.changes[response.changes.length-1];
+                // console.log(currentChanges, response.changes, newChanges);
+                
+                currentChanges = response.changes;
+    
+                const i = newChanges.i; const j = newChanges.j;
+                if (!i || !j) throw new Error("Undefined i or j.");
+    
+                const div = document.getElementById(`${i} ${j}`);
+                if (!div) 
+                    throw new Error("Can`t find div with id: ["+i+"]["+j+"]");
+                const img = div.getElementsByTagName("img")[0];
+                if (!img) 
+                    throw new Error("Can`t find img in div with id: ["+i+"]["+j+"]");
+                img.src = "../assets/" + newChanges.obj + ".png";
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+    
+})
 
-for (let i = 10; i > 0; i--) {
-    const tr = document.createElement("tr");
-    for (let j = 1; j <= 10; j++) {
-        const td = document.createElement("td");
-
-        const div = document.createElement("div")
-        div.className = "inner";
-        div.id = `${i} ${j}`;
-
-        td.appendChild(div);
-        tr.appendChild(td);
-    }
-    table.appendChild(tr);
-}
-
-const div_win = document.createElement("div");
-div_win.className = "winning";
-
-div_table.appendChild(table);
-div_table.appendChild(div_win);
-
-//-----------------
-
-const div_win_block = document.createElement("div");
-div_win_block.id = "win_block";
-
-const span_winner = document.createElement("span");
-span_winner.className = "winner";
-const span_again = document.createElement("span");
-span_again.className = "again";
-span_again.textContent = "Играть ещё!";
-
-div_win_block.appendChild(span_winner);
-div_win_block.appendChild(span_again);
-
-//-----------------
-
-gameField.appendChild(div_table);
-gameField.appendChild(div_win_block);
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
-// let currentField = [];
-const eventSource = new EventSource('/getField');
-eventSource.onmessage = (event) => {
-    const response = JSON.parse(event.data);
-    try {
-        console.log(response);
-        // console.log(currentSessions.toString() != response.sessions.toString());
-        // if (currentSessions.toString() != response.sessions.toString()) {
-        //     currentSessions = response.sessions;
-        //     refreshSessions(currentSessions);
-        // }
-    } catch (error) {
-        console.error("Error:", error);
-    }
-};

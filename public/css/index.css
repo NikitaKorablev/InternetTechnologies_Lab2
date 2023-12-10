@@ -6,16 +6,15 @@
   margin: 2% auto;
 }
 
-#session {
+#sessions {
   border: 1px solid #333;
 }
 
 .session {
   display: flex;
   justify-content: space-between;
-  padding: 5px;
+  padding: 10px;
   width: auto;
-  border: 1px solid #333;
 }
 
 .connectBtn {
