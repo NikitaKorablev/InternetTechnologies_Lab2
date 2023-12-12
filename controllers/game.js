@@ -141,17 +141,30 @@ function getReverse(sign, isDead = false) {
     } else if (sign == "o") {
         if (isDead) return "dead_x";
         return "x";
+    } else if (sign == "dead_x") {
+        return "o";
+    } else if (sign == "dead_o") {
+        return "x";
     } else throw new Error("Sign is undefined");
 }
+
+
 
 class Session {
     constructor(id) {
         this.id = id;
-        this.isStarted = false;
+        // this.isStarted = false;
         this.players = [];
         this.field = new Field();
         this.lastMove = [];
+
+        this.isEnd = false;
+        this.statistics = {};
     }
+
+    // checkEndGame(field, obj) {
+        
+    // }
 
     getAvailableCells(obj) {
         if (!obj || typeof obj != typeof "") throw new Error("Undefined obj input.");
@@ -165,15 +178,12 @@ class Session {
             else throw new Error("'Object' is undefined.");
             return availableCells;
         } else {
-            // console.log(field[0, 0], field[9, 9], obj);
             if (field[0][0] == "_" && obj == "x") availableCells.push({"i": 1, "j": 1});
             else if (field[9][9] == "_" && obj == "o") availableCells.push({"i": 10, "j": 10});
 
             for (let i = 0; i < 10; i++) {
                 for (let j = 0; j < 10; j++) {
                     const mask = getMask(field, i, j);
-                    // if (i == 0 && j == 1) console.log(mask);
-
                     if (field[i][j] == getReverse(obj, true)) {
                         for (let ik = 0; ik < 3; ik++) {
                             for (let jk = 0; jk < 9; jk++) {
@@ -185,19 +195,14 @@ class Session {
                                     let i_check = i; let j_check = j;
                                     while (field[i_check][j_check] && field[i_check][j_check] == getReverse(obj, true)) {
                                         i_check += i_move; j_check += j_move;
-
-                                        // console.log(field[i_check][j_check] == "_", field[i_check][j_check] == getReverse(obj));
-                                        // console.log(field[i_check][j_check], getReverse(obj));
                                         if (field[i_check][j_check] == "_" || field[i_check][j_check] == getReverse(obj)) {
                                             const cell = {"i": i_check+1, "j": j_check+1};
                                             if (!hasOwn(availableCells, cell)) availableCells.push(cell);
                                             console.log(availableCells);
                                         }
-                                        // console.log(i_check, j_check);
                                     }
                                 }
-                        }
-
+                            }
                         }
                     } else if (field[i][j] == "_" || field[i][j] == getReverse(obj)) {
                         for (let ki = 0; ki < 3; ki++) {
@@ -213,29 +218,8 @@ class Session {
                     }
                 }
             }
-            // console.log(availableCells);
             return availableCells;
         }
-
-
-        // if (obj == "x") {
-        //     if (this.field.isClear) {
-        //         availableCells.push({"i": 1, "j": 1});
-        //         return availableCells;
-        //     }
-        //     else {
-
-        //     }
-        // } else if (obj == "o") {
-        //     if (this.field.isClear) {
-        //         availableCells.push({"i": 10, "j": 10});
-        //         return availableCells;
-        //     }
-        //     else {
-
-        //     }
-        // }
-
     }
 
     getMyObj(player) {
@@ -267,6 +251,11 @@ class Session {
     }
 
     move(moveOject) {
+        let firstMoove = this.field.isClear;
+        console.log("is cleare", firstMoove);
+
+        if (this.isEnd) throw new Error("Game is over");
+
         if (moveOject.game_id != this.id) throw new Error("Invalid session id.");
         
         const i = moveOject.i; const j = moveOject.j;
@@ -274,9 +263,21 @@ class Session {
 
         this.field.setCell(i, j, moveOject.obj);
         this.lastMove.push({"i": i, "j": j, "obj": moveOject.obj});
+
+
+        if (!firstMoove) {
+            console.log(moveOject.obj);
+            const killedObj = moveOject.obj == "dead_x" ? "x" : "o";
+            const field = this.field.getField();
+            const hasObj =  field.some(list => list.some(el => el == killedObj));
+            console.log(field);
+            if (!hasObj) this.stopSession(moveOject.player, killedObj);
+        }
     }
 
     addNewPlayer(player) {
+        // if (this.isEnd) throw new Error("Game is over");
+
         if (typeof player != typeof "")
             throw new Error("Unexepted object type.");
 
@@ -295,6 +296,8 @@ class Session {
     }
 
     playerConnect(player_id) {
+        // if (this.isEnd) throw new Error("Game is over");
+
         const player = this.players.filter(x => x.player == player_id)[0];
         if (!player) throw new Error("This player is unexepted.");
 
@@ -311,9 +314,27 @@ class Session {
         // console.log("test", this.players.filter(x => x.player == player_id)[0]);
     }
 
-    startSession() {
-        if (this.isStarted) { throw new Error("Game is already started") }
-        this.isStarted = true;
+    // startSession() {
+    //     if (this.isStarted) { throw new Error("Game is already started") }
+    //     this.isStarted = true;
+    // }
+
+    stopSession(winner, obj) {
+        this.isEnd = true;
+        console.log(this.isEnd);
+
+        this.statistics.loser = {
+            "id": this.players[0] == winner ? this.players[1].player : this.players[0].player,
+            "obj": obj
+        };
+
+        this.statistics.winner = {
+            "id": winner,
+            "obj": getReverse(obj)
+        }
+
+        const data = new Date();
+        this.statistics.time = `${data.getDate()}.${data.getMonth()}.${data.getFullYear()} ${data.getHours()}:${data.getMinutes()}`
     }
 }
 
@@ -322,9 +343,6 @@ class Game {
         this.sessions = [];
         this.players = [];
     }
-
-    set response(value) { this.response = value; }
-    get response() { return this.response; }
 
     findSession(sesion_id) {
         const session = this.sessions.filter(el => el.id == sesion_id);

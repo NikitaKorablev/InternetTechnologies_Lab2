@@ -1,7 +1,7 @@
 async function move(data) {
     const url = "/move";
     try {
-        await fetch(url, { 
+        const response = await fetch(url, { 
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -15,7 +15,7 @@ async function move(data) {
             return resp;
         });
 
-        // return response.json();
+        return response.json();
     } catch(error) {
         console.error("Error", error);
     }
@@ -159,7 +159,7 @@ async function drawField() {
             td.appendChild(block);
             tr.appendChild(td);
 
-            div.addEventListener('click', (e) => {
+            div.addEventListener('click', async (e) => {
                 const data = {
                     "game_id": session_id,
                     "i": i,
@@ -170,24 +170,30 @@ async function drawField() {
                 
                 const oldImgSrc = img.src.split("/").pop().split(".")[0];
                 console.log(oldImgSrc);
+                let moveRes;
                 if (oldImgSrc == '') {
                     img.src = "../assets/" + myObj + ".png";
                     data["obj"] = myObj;
-                    move(data);
+                    moveRes = await move(data);
                 }
                 else if (myObj == 'x' && oldImgSrc == 'o') {
                     img.src = "../assets/" + "dead_o" + ".png";
                     data["obj"] = "dead_o";
-                    move(data);
+                    moveRes = await move(data);
                 }
                 else if (myObj == 'o' && oldImgSrc == 'x') {
                     img.src = "../assets/" + "dead_x" + ".png";
                     data["obj"] = "dead_x";
-                    move(data);
+                    moveRes = await move(data);
                 }
-                console.log(i, j);
+                
+                console.log(moveRes);
+                // if (moveRes.is_end) 
+
+
+                // console.log(i, j);
                 updateAvailableCells(myObj, i, j);
-                console.log(img.src);
+                // console.log(img.src);
             })
         }
         table.appendChild(tr);
@@ -203,14 +209,15 @@ async function drawField() {
     const div_win_block = document.createElement("div");
     div_win_block.id = "win_block";
 
-    const span_winner = document.createElement("span");
-    span_winner.className = "winner";
-    const span_again = document.createElement("span");
-    span_again.className = "again";
-    span_again.textContent = "Играть ещё!";
+    const div_winner = document.createElement("div");
+    div_winner.className = "winner";
 
-    div_win_block.appendChild(span_winner);
-    div_win_block.appendChild(span_again);
+    const p = document.createElement("p");
+    p.id = "win_info";
+    // p.textContent = "Hello";
+
+    div_winner.appendChild(p);
+    div_win_block.appendChild(div_winner);
 
     //-----------------
 
@@ -234,14 +241,30 @@ async function drawField() {
     //--------------------------------------------------------------
     //--------------------------------------------------------------
 
-    const availableCells = res.available_cells;
-    if (availableCells.length == 0) 
-        throw new Error("Available cells is undefined.");
-    availableCells.forEach(element => {
-        const block = document.getElementById("block_"+element.i+"_"+element.j);
-        block.style.zIndex = -1;
-    })
+    if (res.game_end) {
+        for (let i = 1; i < 11; i++) {
+            for (let j = 1; j < 11; j++) {
+                const block = document.getElementById("block_"+i+"_"+j);
+                block.style.zIndex = 1;
+            }
 
+            const div_wining = document.getElementsByClassName("winning")[0];
+
+
+            const p = document.getElementById("win_info");
+            p.textContent = `'${res.statistics.winner.id}' is winner. He was playing with '${res.statistics.winner.obj.toUpperCase()}'`;
+        }
+    } else {
+        const availableCells = res.available_cells;
+        if (availableCells.length == 0) 
+            throw new Error("Available cells is undefined.");
+        availableCells.forEach(element => {
+            const block = document.getElementById("block_"+element.i+"_"+element.j);
+            block.style.zIndex = -1;
+        })
+    }
+
+    console.log(res.statistics);
     return lastChanges;
 };
 
